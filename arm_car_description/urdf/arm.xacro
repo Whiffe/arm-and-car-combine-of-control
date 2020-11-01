@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<robot name="arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- link1 properties -->
+    <xacro:property name="link1_width" value="0.01" />
+    <xacro:property name="link1_len" value="0.03" />
+
+    <!-- link2 properties -->
+    <xacro:property name="link2_width" value="0.01" />
+    <xacro:property name="link2_len" value="0.09" />
+
+    <!-- link2 properties -->
+    <xacro:property name="link3_width" value="0.01" />
+    <xacro:property name="link3_len" value="0.09" />
+
+    <!-- Inertial matrix -->
+    <xacro:macro name="inertial_matrix" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro>
+
+    <!-- ///////////////////////////////////////   bottom_joint   ////////////////////////////////////////// -->
+
+    <link name="bottom_link">
+        <visual>
+              <origin xyz=" 0 0 0.01"  rpy="0 0 0"/>
+                  <geometry>
+                       <box size="0.1 0.1 0.01" />
+                  </geometry>
+              <material name="Brown" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.01"  rpy="0 0 0"/>
+            <geometry>
+                <box size="0.1 0.1 0.01" />
+            </geometry>
+        </collision>
+        <xacro:inertial_matrix mass="0.5"/>
+    </link>
+
+    <joint name="bottom_joint" type="fixed">
+        <origin xyz="0 0 -0.01" rpy="0 0 0" />
+        <parent link="plate_1_link"/>
+        <child link="bottom_link"/>
+    </joint>
+
+    <!-- /////////////////////////////////////   ARM BASE LINK    ////////////////////////////////////////////// -->
+    <link name="arm_base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.02 0.02 0.03" />
+            </geometry>
+            <material name="White" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.02 0.02 0.03" />
+            </geometry>
+        </collision>
+        <xacro:inertial_matrix mass="0.1"/>
+    </link>
+
+    <joint name="arm_base_link" type="fixed">
+        <parent link="bottom_link"/>
+        <child link="arm_base_link"/>
+        <origin xyz="0 0 0.02" rpy="0 0 0" />
+    </joint>
+
+    <!-- /////////////////////////////////////   LINK1  ////////////////////////////////////////////// -->
+    <link name="link1" >
+        <visual>
+            <origin xyz="-${link1_len/2} 0 0" rpy="0 ${M_PI/2} 0" />
+            <geometry>
+                <cylinder radius="${link1_width}" length="${link1_len}"/>
+            </geometry>
+            <material name="Blue" />
+        </visual>
+        <collision>
+            <origin xyz="-${link1_len/2} 0 0" rpy="0 ${M_PI/2} 0" />
+            <geometry>
+                <cylinder radius="${link1_width}" length="${link1_len}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_matrix mass="1"/>
+    </link>
+
+    <joint name="joint1" type="revolute">
+        <parent link="arm_base_link"/>
+        <child link="link1"/>
+        <origin xyz="0 0 0.01" rpy="0 ${M_PI/2} 0" />
+        <axis xyz="-1 0 0" />
+        <limit effort="300" velocity="1" lower="-2.35" upper="2.35" />
+        <dynamics damping="50" friction="1"/>
+    </joint>
+
+
+    <!-- ///////////////////////////////////////   LINK2  ////////////////////////////////////////////// -->
+    <link name="link2" >
+        <visual>
+            <origin xyz="0 0 ${link2_len/2}" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${link2_width}" length="${link2_len}"/>
+            </geometry>
+            <material name="White" />
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 ${link2_len/2}" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${link2_width}" length="${link2_len}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_matrix mass="0.1"/>
+    </link>
+
+    <joint name="joint2" type="revolute">
+        <parent link="link1"/>
+        <child link="link2"/>
+        <origin xyz="-${link1_len} 0 0.0" rpy="0 0 ${M_PI/2}" />
+        <axis xyz="-1 0 0" />
+        <limit effort="300" velocity="1" lower="-2.62" upper="2.62" />
+        <dynamics damping="50" friction="1"/>
+    </joint>
+
+
+    <!-- /////////////////////////////////   LINK3  ///////////////////////////////////////////////////// -->
+    <link name="link3" >
+        <visual>
+            <origin xyz="0 0 -${link3_len/2}" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${link3_width}" length="${link3_len}"/>
+            </geometry>
+            <material name="Blue" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 -${link3_len/2}" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${link3_width}" length="${link3_len}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_matrix mass="0.1"/>
+    </link>
+
+    <joint name="joint3" type="revolute">
+        <parent link="link2"/>
+        <child link="link3"/>
+        <origin xyz="0 0 ${link2_len}" rpy="${M_PI/3} ${M_PI} 0" />
+        <axis xyz="1 0 0" />
+        <limit effort="300" velocity="1" lower="-2.62" upper="2.62" />
+        <dynamics damping="50" friction="1"/>
+    </joint>
+
+    <!-- /////////////////////////////////   ARM_SRANDOFF_LINK  ///////////////////////////////////////////////////// -->
+
+        <link name="arm_standoff_link">
+            <inertial>
+                <mass value="0.001" />
+                <origin xyz="0 0 0" />
+                <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+          iyy="0.0001" iyz="0.0"
+          izz="0.0001" />
+            </inertial>
+
+            <visual>
+                <origin xyz=" 0 0 0 " rpy="0 0 0" />
+                <geometry>
+                    <box size="0.01 0.01 0.28" />
+                </geometry>
+                <material name="black">
+                    <color rgba="0.16 0.17 0.15 0.9"/>
+                </material>
+            </visual>
+
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.01 0.01 0.28" />
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="arm_standoff_link" type="fixed">
+            <origin xyz="-0.1 0 0.12" rpy="0 0 0" />
+            <parent link="plate_1_link"/>
+            <child link="arm_standoff_link" />
+        </joint>
+
+    <!-- /////////////////////////////////  ARM_PLATE    ////////////////////////////////////// -->
+
+        <link name="arm_plate">
+	    <box_inertial_matrix m="0.1" w="${base_link_width}" h="${base_link_hight}" d="${base_link_length}" />
+
+            <visual>
+                <origin xyz=" 0 0 0 " rpy="0 0 0" />
+                <geometry>
+		    <box size="${base_link_length} ${base_link_width} ${base_link_hight}" />
+                </geometry>
+                <material name="yellow"/>
+            </visual>
+
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+                <geometry>
+		    <box size="${base_link_length} ${base_link_width} ${base_link_hight}" />
+		    <!--<box_inertial_matrix m="0.1" w="${base_link_width}" h="${base_link_hight}" d="${base_link_length}" />-->
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="arm_plate" type="prismatic">
+            <origin xyz="0.1 0 0.1" rpy="0 0 0" />
+            <parent link="arm_standoff_link"/>
+            <child link="arm_plate" />
+	    <limit effort="1000.0" lower="-0.08" upper="0.12" velocity="0.5"/>
+	    <axis xyz="0 0 1" />
+	    <dynamics damping="0.7" />
+        </joint>
+
+
+    <!-- /////////////////////////////////   Gazebo   ////////////////////////////////////// -->
+    <gazebo reference="bottom_link">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="arm_base_link">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="link1">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="link2">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="link3">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="arm_standoff_link">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="arm_plate">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="arm_plate_block">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="link3_block">
+        <material>Gazebo/White</material>
+    </gazebo>
+
+
+    <!-- Transmissions for ROS Control -->
+    <xacro:macro name="transmission_block" params="joint_name">
+        <transmission name="tran1">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${joint_name}">
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="motor1">
+                <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+    
+    <xacro:transmission_block joint_name="joint1"/>
+    <xacro:transmission_block joint_name="joint2"/>
+    <xacro:transmission_block joint_name="joint3"/>
+
+
+    <!-- ros_control plugin -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/arm</robotNamespace>
+ 	    <legacyModeNS>true</legacyModeNS> 
+        </plugin>
+    </gazebo>
+
+</robot>
